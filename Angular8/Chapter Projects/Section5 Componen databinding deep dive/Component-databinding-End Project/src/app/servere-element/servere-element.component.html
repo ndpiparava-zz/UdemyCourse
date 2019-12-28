@@ -1,0 +1,15 @@
+<div class="panel panel-default">
+    <div class="panel-heading" #heading>{{ element.name }}</div>
+    <div class="panel-body">
+
+        <!-- Projecting content into component with ng-content -->
+        <!-- <p>
+            <strong *ngIf="element.type === 'server'" style="color: red">{{ element.content }}</strong>
+            <em *ngIf="element.type === 'blueprint'">{{ element.content }}</em>
+        </p> -->
+
+        <!-- this hook the whatever content we pass it to component tag 
+        <app-servere-element> whatver content here will be hooked</app-servere-element>-->
+        <ng-content></ng-content>
+    </div>
+</div>

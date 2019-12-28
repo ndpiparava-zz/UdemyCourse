@@ -1,0 +1,26 @@
+<div class="row">
+        <div class="col-xs-12">
+            <p>Add new Servers or blueprints!</p>
+            <label>Server Name</label>
+            <!-- <input type="text" class="form-control" [(ngModel)]="newServerName"> this is two way data binding-->
+            <!-- Local reference, can be placed any where which just kind of local ref varibale 
+                below is the example
+                #serverNameInput will reference to whole input html element not only to the value 
+            -->
+            <input 
+            type="text" 
+            class="form-control" 
+            #serverNameInput>
+            <label>Server Content</label>
+            <!-- below is two binding which is going to replace with @ViewChild dom -->
+            <!-- <input type="text" class="form-control" [(ngModel)]="newServerContent"> -->
+            <input
+             type="text" 
+             class="form-control" 
+             #serverContentInput>
+
+            <br>
+            <button class="btn btn-primary" (click)="onAddServer(serverNameInput)">Add Server</button>
+            <button class="btn btn-primary" (click)="onAddBlueprint(serverNameInput)">Add Server Blueprint</button>
+        </div>
+    </div>

@@ -1,0 +1,154 @@
+import { Injectable } from "@angular/core";
+import { HttpClient, HttpErrorResponse } from "@angular/common/http";
+import { map, catchError, tap } from "rxjs/operators";
+import { throwError, Subject, BehaviorSubject } from "rxjs";
+import { error } from "protractor";
+import { UserModel } from "./user.model";
+import { Router } from "@angular/router";
+
+export interface AuthResponseData {
+  idToken: string;
+  email: string;
+  refreshToken: string;
+  expiresIn: string;
+  localId: string;
+  regitered?: boolean;
+}
+
+@Injectable({ providedIn: "root" })
+export class AuthService {
+  user = new BehaviorSubject<UserModel>(null);
+  private tokenExpirationTimer: any;
+
+  constructor(private http: HttpClient, private route: Router) {}
+
+  signup(email: string, passowrd: string) {
+    return this.http
+      .post<AuthResponseData>(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=AIzaSyCyfspQC4wtfWlk5dCHv_i4g8LaSmXpli8",
+        {
+          email: email,
+          password: passowrd,
+          returnSecureToken: true
+        }
+      )
+      .pipe(
+        catchError(this.handleError),
+        tap(responseData => {
+          this.handleAuthentication(responseData);
+        })
+      );
+  }
+
+  login(email: string, password: string) {
+    return this.http
+      .post<AuthResponseData>(
+        "https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyCyfspQC4wtfWlk5dCHv_i4g8LaSmXpli8",
+        {
+          email: email,
+          password: password,
+          returnSecureToken: true
+        }
+      )
+      .pipe(
+        catchError(this.handleError),
+        tap(responseData => {
+          this.handleAuthentication(responseData);
+        })
+      );
+  }
+
+  autoLogin() {
+    const userData: {
+      email: string;
+      id: string;
+      _token: string;
+      _tokenExpirationDate: string;
+    } = JSON.parse(localStorage.getItem("userData"));
+
+    if (!userData) {
+      return;
+    }
+
+    const loadedUser = new UserModel(
+      userData.email,
+      userData.id,
+      userData._token,
+      new Date(userData._tokenExpirationDate)
+    );
+
+    if (loadedUser.token) {
+        this.user.next(loadedUser);
+        const expirationDuration = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime();
+        this.autologout(expirationDuration);
+    }
+
+  }
+
+  logout() {
+    this.user.next(null);
+    this.route.navigate(["/auth"]);
+    localStorage.removeItem('userData');
+    if(this.tokenExpirationTimer) {
+
+        clearTimeout(this.tokenExpirationTimer);
+    }
+    this.tokenExpirationTimer = null;
+  }
+
+  autologout(expirationDuration: number) {
+
+    this.tokenExpirationTimer= setTimeout(() => {
+        this.logout();
+    }, expirationDuration);
+  }
+ 
+  private handleError(errorRes: HttpErrorResponse) {
+    let errorMessage = "An unknown error occured";
+    if (!errorRes.error || !errorRes.error.error) {
+      return throwError(errorMessage);
+    }
+
+    switch (errorRes.error.error.message) {
+      case "EMAIL_NOT_FOUND":
+        errorMessage =
+          "User is not found. Please check login details and try again.";
+        break;
+      case "INVALID_PASSWORD":
+        errorMessage = "Invalid Password, Please check and try again.";
+        break;
+      case "USER_DISABLED":
+        errorMessage =
+          "Maximum no of  wrong attempts,  User is blocked for sometime, Please reset passowrd or try after sometime.";
+        break;
+      case "EMAIL_EXISTS":
+        errorMessage = "Email already exist.";
+        break;
+      case "OPERATION_NOT_ALLOWED":
+        errorMessage = "Operation not allowed";
+        break;
+      case "TOO_MANY_ATTEMPTS_TRY_LATER":
+        errorMessage = "Maximum no of attempts, Please try after sometime.";
+        break;
+      default:
+        break;
+    }
+
+    return throwError(errorMessage);
+  }
+
+  private handleAuthentication(responseData: AuthResponseData) {
+    const expirationDate = new Date(
+      new Date().getTime() + +responseData.expiresIn * 1000
+    );
+    const user = new UserModel(
+      responseData.email,
+      responseData.localId,
+      responseData.idToken,
+      expirationDate
+    );
+    this.user.next(user);
+    this.autologout(+responseData.expiresIn * 1000);
+    localStorage.setItem("userData", JSON.stringify(user));
+  }
+}
