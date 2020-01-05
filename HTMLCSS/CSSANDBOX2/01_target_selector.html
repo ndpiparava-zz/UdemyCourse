@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+    <style>
+        /* Direct child */
+        div > p{
+          background: #ddd;  
+        }
+
+        /* Directly after */
+        div + p {
+            background: #333;
+            color: white;
+        }
+
+        /* By Attributes */
+        a[target ] {
+            background: red;
+            color: white;
+        }
+        /* Specific attributes value */
+
+        input[type='text'], input[type='email'] {
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+    </style>
+  </head>
+  <body>
+    <div>
+      <p>
+        Lorem ipsum dolor sit, amet consectetur adipisicing elit. Facere, ullam.
+      </p>
+      <ul>
+        <li>Item 1</li>
+        <li><p> Item 2</p></li>
+        <li>Item 3</li>
+      </ul>
+      <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi, totam.</p>
+    </div>
+    <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Sequi, totam.</p>
+    <a href="#">Page 1</a>
+    <a href="#" target="_self">Page 2</a>
+      <a href="www.google.com" target="_blank">Google</a>
+
+      <br>
+      <form action="">
+          <input type="text" placeholder="name">
+          <input type="email" placeholder="email">
+          <input type="submit" value="Submit">
+      </form>
+  </body>
+</html>
